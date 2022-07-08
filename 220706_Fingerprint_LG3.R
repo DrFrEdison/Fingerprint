@@ -67,13 +67,19 @@ bev$para$files$ref <- grep("ref", dir(pattern = "ref.csv$")[grep(bev$para$bevera
 bev$para$files$drk <- grep("rk", dir(pattern = "rk.csv$")[grep(bev$para$beverage, dir(pattern = "rk.csv$"))], value = T) # Dark spc
 bev$para$files$spc <- grep("spc", dir(pattern = "spc.csv$")[grep(bev$para$beverage, dir(pattern = "spc.csv$"))], value = T) # Production spc
 
+subdat <- c(1,4)
+bev$para$files$ref <- bev$para$files$ref[ subdat]
+bev$para$files$drk <- bev$para$files$drk[ subdat]
+bev$para$files$spc <- bev$para$files$spc[ subdat]
 # get file info ####
 bev$para$txt <- lapply(bev$para$files, txt.file)
 
 # read files ####
 bev$raw$ref <- lapply(bev$para$files$ref, function(x) fread(x, dec = ",", sep = ";")) # Background spc
 bev$raw$drk <- lapply(bev$para$files$drk, function(x) fread(x, dec = ",", sep = ";")) # Dark spc
-bev$raw$spc <- lapply(bev$para$files$spc, function(x) fread(x, dec = ",", sep = ";", nrows = 1000)) # Production spc
+bev$raw$spc <- lapply(bev$para$files$spc, function(x) fread(x, dec = ",", sep = ";")) # Production spc
+
+bev$raw$spc <- lapply(bev$raw$spc, function( x ) x[ seq( 1, nrow(x), 4), ])
 
 # set names ####
 names(bev$raw$ref) <- bev$para$txt$ref$loc.line
@@ -88,21 +94,21 @@ setwd("./plot")
 
 # Integrationszeit ####
 png(paste0("Integrationszeiten_LG3.png"),xxx<-4800,xxx/16*9,"px",12,"white",res=500,"sans",T,"cairo")
-par( mfrow = c(2,2), mar = c(3, 4, 3, 1))
-for(i in 1:4){
+par( mfrow = c(1,2), mar = c(3, 4, 3, 1))
+for(i in 1 : length(bev$raw$spc)){
   
   
   
   plot( bev$raw$ref[[ i ]]$datetime, bev$raw$ref[[ i ]]$integrationTime
         , axes = T, xlab = "", ylab = "Integrationszeit"
         , main = paste("Integrationszeit", bev$para$txt$ref$location[ i ], bev$para$txt$ref$line[ i ])
-        , ylim = c(0, 300))
+        , ylim = c(0, 100))
   
 }
 
 dev.off()
 
-# Median Referenzen / Dunkelwerte ####
+# Median und FP Referenzen ####
 bev$median$ref <- mapply( function( spc, numcol) median_spc( spc, numcol)
                           , spc = bev$raw$ref
                           , numcol = bev$ppp$ref
@@ -113,7 +119,38 @@ bev$fp$ref <- mapply( function( spc_ref, spc, numcol) fingerprint( spc_ref, spc,
                       , numcol = bev$ppp$ref
                       , SIMPLIFY = F)
 
-bev$par$colp.location <- c("blue", "red", "darkgreen", "orange")
+# Median und FP SPC ####
+bev$median$spc <- mapply( function( spc, numcol) median_spc( spc, numcol)
+                          , spc = bev$raw$spc
+                          , numcol = bev$ppp$spc
+                          , SIMPLIFY = F)
+
+bev$median.daily.all <- mapply( function( spc, numcol) median_daily_spc( spc = spc
+                                                                         , date = spc$datetime
+                                                                         , tz = "UTC"
+                                                                         , numcol = numcol)
+                                , spc = bev$raw$spc
+                                , numcol = bev$ppp$spc
+                                , SIMPLIFY = F)
+
+bev$fp$spc <- mapply( function( spc_ref, spc, numcol) fingerprint( spc_ref, spc, numcol)
+                      , spc_ref = bev$median$spc
+                      , spc = bev$raw$spc
+                      , numcol = bev$ppp$spc
+                      , SIMPLIFY = F)
+
+# Plot Medianreferenzen ####
+setwd(bev$wd)
+setwd("./plot")
+
+require("wesanderson")
+bev$par$colfunc <- colorRampPalette( c( wes_palettes$Zissou1[1:3] ) )
+for(i in 1 : length(bev$raw$ref)) bev$par$fp$ref$colp[[ i ]] <- bev$par$colfunc( nrow( bev$fp$ref[[ i ]] ) )
+
+bev$par$colp.location <- c("blue", "red", "darkgreen", "orange")[ subdat ]
+
+png(paste0("Medianreferenzen_LG3.png")
+    ,xxx<-4800,xxx/16*9,"px",12,"white",res=500,"sans",T,"cairo")
 
 par(mfrow = c(1,1))
 matplot(bev$para$wl
@@ -125,6 +162,23 @@ matplot(bev$para$wl
 legend( "topright", bev$para$txt$ref$loc.line
         , lty = 1, col = bev$par$colp.location)
 
+dev.off()
+
+for(i in 1 : length(bev$raw$spc)){
+png(paste0("Fingerprint_Referenzen_", bev$para$txt$spc$loc.line[i], ".png")
+    ,xxx<-4800,xxx/16*9,"px",12,"white",res=500,"sans",T,"cairo")
+
+par(mfrow = c(1,1))
+matplot(bev$para$wl
+        , t( bev$fp$ref[[ i ]])
+        , type = "l", lty = 1
+        , col = bev$par$fp$ref$colp[[ i ]]
+        , xlab = lambda, ylab = "Counts"
+        , main = paste("Fingerprint der Referenzen in", bev$para$txt$spc$loc.line[i])
+        , ylim = c(-.25, .25))
+
+dev.off()
+}
 
 
 
@@ -132,9 +186,35 @@ legend( "topright", bev$para$txt$ref$loc.line
 
 
 
-fingerprint(spc_0 = bev$median$ref$Mannheim_MY
-            , spc_1 = bev$raw$ref$Mannheim_MY
-            , numcol = bev$ppp$ref$Mannheim_MY)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+bev$fp$ref <- mapply( function( spc_0, spc_1, numcol ) fingerprint(spc_0 = spc_0
+                                                                   , spc_1 = spc_1
+                                                                   , numcol = numcol)
+                      , spc_0 = bev$median$ref
+                      , spc_1 = bev$raw$ref
+                      , numcol = bev$ppp$ref)
 
 
 
