@@ -67,10 +67,10 @@ bev$para$files$ref <- grep("ref", dir(pattern = "ref.csv$")[grep(bev$para$bevera
 bev$para$files$drk <- grep("rk", dir(pattern = "rk.csv$")[grep(bev$para$beverage, dir(pattern = "rk.csv$"))], value = T) # Dark spc
 bev$para$files$spc <- grep("spc", dir(pattern = "spc.csv$")[grep(bev$para$beverage, dir(pattern = "spc.csv$"))], value = T) # Production spc
 
-subdat <- c(1,4)
-bev$para$files$ref <- bev$para$files$ref[ subdat]
-bev$para$files$drk <- bev$para$files$drk[ subdat]
-bev$para$files$spc <- bev$para$files$spc[ subdat]
+# subdat <- c(1,2)
+# bev$para$files$ref <- bev$para$files$ref[ subdat]
+# bev$para$files$drk <- bev$para$files$drk[ subdat]
+# bev$para$files$spc <- bev$para$files$spc[ subdat]
 # get file info ####
 bev$para$txt <- lapply(bev$para$files, txt.file)
 
@@ -94,7 +94,7 @@ setwd("./plot")
 
 # Integrationszeit ####
 png(paste0("Integrationszeiten_LG3.png"),xxx<-4800,xxx/16*9,"px",12,"white",res=500,"sans",T,"cairo")
-par( mfrow = c(1,2), mar = c(3, 4, 3, 1))
+par( mfrow = c(2,2), mar = c(3, 4, 3, 1))
 for(i in 1 : length(bev$raw$spc)){
   
   
@@ -102,7 +102,7 @@ for(i in 1 : length(bev$raw$spc)){
   plot( bev$raw$ref[[ i ]]$datetime, bev$raw$ref[[ i ]]$integrationTime
         , axes = T, xlab = "", ylab = "Integrationszeit"
         , main = paste("Integrationszeit", bev$para$txt$ref$location[ i ], bev$para$txt$ref$line[ i ])
-        , ylim = c(0, 100))
+        , ylim = c(0, 250))
   
 }
 
@@ -147,7 +147,7 @@ require("wesanderson")
 bev$par$colfunc <- colorRampPalette( c( wes_palettes$Zissou1[1:3] ) )
 for(i in 1 : length(bev$raw$ref)) bev$par$fp$ref$colp[[ i ]] <- bev$par$colfunc( nrow( bev$fp$ref[[ i ]] ) )
 
-bev$par$colp.location <- c("blue", "red", "darkgreen", "orange")[ subdat ]
+bev$par$colp.location <- c("blue", "red", "darkgreen", "orange") # [ subdat ]
 
 png(paste0("Medianreferenzen_LG3.png")
     ,xxx<-4800,xxx/16*9,"px",12,"white",res=500,"sans",T,"cairo")
@@ -164,6 +164,7 @@ legend( "topright", bev$para$txt$ref$loc.line
 
 dev.off()
 
+# Plot Medianreferenzen ####
 for(i in 1 : length(bev$raw$spc)){
 png(paste0("Fingerprint_Referenzen_", bev$para$txt$spc$loc.line[i], ".png")
     ,xxx<-4800,xxx/16*9,"px",12,"white",res=500,"sans",T,"cairo")
@@ -180,89 +181,54 @@ matplot(bev$para$wl
 dev.off()
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-bev$fp$ref <- mapply( function( spc_0, spc_1, numcol ) fingerprint(spc_0 = spc_0
-                                                                   , spc_1 = spc_1
-                                                                   , numcol = numcol)
-                      , spc_0 = bev$median$ref
-                      , spc_1 = bev$raw$ref
-                      , numcol = bev$ppp$ref)
-
-
-
-
-
-
-
-
-
-
-# transfer_csv ####
-bev$trs <- lapply(bev$raw, function(x) lapply(x, transfer_csv))
-
-# prediction
-# model_parameter(bev$para$customer, bev$para$beverage, LG = "3")
-bev$pred <- lapply(bev$para$substance, function( para ) lapply(bev$trs$spc, function( spc )
-  use_model_on_device(customer = bev$para$customer
-                      , beverage = bev$para$beverage
-                      , LG = "3"
-                      , parameter = para
-                      , csv_transfered = spc)
-)
-)
-names(bev$pred) <- bev$para$substance
-
-# Plot ####
-setwd(bev$wd)
-dir.create("plot", showWarnings = F)
-setwd("./plot")
-
-par(mfrow = c(1, length(bev$trs$spc)))
-for(i in 1 : length(bev$pred) ){
-  plot(bev$raw$spc[[ i ]]$GS2, ylim = c(90, 110)
-       , main = paste("GS2 in", bev$para$txt$spc$loc.line[ i ])
-       , axes = F, xlab = "KW", ylab = "GS2 in %")
-  xaxisdate(bev$raw$spc[[ i ]]$datetime)
+# Fingerprint pca clean up for NA and INF ####
+dat.row.sum <- list()
+dat.row.inf <- list()
+for(i in 1:length(bev$fp$spc)){
+  
+  dat.row.sum[[ i ]] <- apply(bev$fp$spc[[ i ]][ , bev$para$wl %in% 220:450], 1, sum)
+  dat.row.sum[[ i ]] <- which( is.na(dat.row.sum[[ i ]]) )
+  
+  dat.row.inf[[ i ]] <- apply(bev$fp$spc[[ i ]][ , bev$para$wl %in% 220:450], 1, function(x) any( is.infinite( x)))
+  dat.row.inf[[ i ]] <- which( dat.row.inf[[ i ]] )
+  
+  dat.row.sum[[ i ]] <- unique( sort( c(dat.row.sum[[ i ]], dat.row.inf[[ i ]]) ) )
+  
+  bev$pca$fp$spc[[ i ]] <- mdatools::pca( bev$fp$spc[[ i ]][ - dat.row.sum[[ i ]], bev$para$wl %in% 220:450] , ncomp = 2)
+  
 }
 
-bev$para$toplot <- "GS2"
-
-
-
-png(paste0(.date(),"_plot.png"),xxx<-4800,xxx/16*9,"px",12,"white",res=500,"sans",T,"cairo")
-par(mfrow = c(1, length(bev$trs$spc)))
-for(i in 1 : length(bev$trs$spc )){
-  plot(bev$pred[[ grep( bev$para$toplot, names(bev$pred)) ]][[ i ]], ylim = c(90, 110)
-       , main = paste("GS2 in", bev$para$txt$spc$loc.line[ i ])
-       , axes = F, xlab = "KW", ylab = "GS2 in %")
-  xaxisdate(bev$raw$spc[[ i ]]$datetime)
+# Plot Fingerprintspektren ####
+for(i in 1 : length(bev$raw$spc)){
+  png(paste0("Fingerprint_Spektren_Cola_", bev$para$txt$spc$loc.line[i], ".png")
+      ,xxx<-4800,xxx/16*9,"px",12,"white",res=500,"sans",T,"cairo")
+  
+  par(mfrow = c(1,1))
+  matplot(bev$para$wl
+          , t( bev$fp$spc[[ i ]])[ , seq(1, nrow( bev$fp$spc[[ i ]] ), 5)]
+          , type = "l", lty = 1
+          , col = bev$par$fp$ref$colp[[ i ]]
+          , xlab = lambda, ylab = "Counts"
+          , main = paste("Fingerprint der Cola-Spektren in", bev$para$txt$spc$loc.line[i])
+          , ylim = c(-.25, .25))
+  
+  dev.off()
 }
+
+# Plot Fingerprintspektren PCA PC1 ####
+png(paste0("Fingerprint_Spektren_Cola_PCA_PC1.png")
+    ,xxx<-4800,xxx/16*9,"px",12,"white",res=500,"sans",T,"cairo")
+par( mfrow = c(2,2), mar = c(3, 4, 3, 1))
+for(i in 1 : length(bev$raw$spc)){
+  
+  plot( bev$pca$fp$spc[[ i ]]$calres$scores[ , 1]
+        , axes = T, xlab = "", ylab = "PC1"
+        , main = paste("PC1", bev$para$txt$ref$location[ i ], bev$para$txt$ref$line[ i ])
+        , ylim = c(- 1, 1))
+  
+}
+
 dev.off()
+
+
+
