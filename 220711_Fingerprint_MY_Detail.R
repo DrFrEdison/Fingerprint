@@ -130,6 +130,8 @@ png(paste0(date(),"_Mannheim_MY_Detail1_Status.png"),xxx<-4800 / 1,xxx/16*9,"px"
 par(mfrow = c(3,4), mar = c(3,3,2,1))
 for(iii in 1 : ncol(fp.detail.1$data$data)){
   
+  if(iii == ncol(fp.detail.1$data$data)) next
+  
   plot( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC")[ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.1$spc ) ]
         , as.numeric(unlist(fp.detail.1$data$data[ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.1$spc ) , iii, with = F]))
         , main = fp.detail.1$data$names[iii], xlab = "", ylab = fp.detail.1$data$names[iii])
@@ -141,6 +143,32 @@ for(iii in 1 : ncol(fp.detail.1$data$data)){
         , as.numeric(unlist(bev$pca$fp$spc[[ 2  ]]$calres$scores[ , 1][ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.1$spc )]))
         , col = "blue", pch = 20, cex = .3, xlab = "", ylab = "", axes = F)
 }
+
+trs <- transfer_csv(bev$raw$spc$Mannheim_MY[ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.1$spc ) , ])
+
+GS2 <- use_model_on_device("CCEP", "Coca_Cola", "3", "GS2", trs)
+Coffein <- use_model_on_device("CCEP", "Coca_Cola", "3", "Coffein", trs)
+
+plot(as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC")[ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.1$spc ) ]
+     , GS2, main = "GS2", xlab = "", ylab = "GS2 in %")
+abline( v = as.POSIXct(bev$raw$ref$Mannheim_MY$datetime[ - dat.row.sum[[ i ]]], tz = "UTC" ), lty = 3)
+
+par(new = T)
+
+plot( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC")[ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.1$spc ) ]
+      , as.numeric(unlist(bev$pca$fp$spc[[ 2  ]]$calres$scores[ , 1][ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.1$spc )]))
+      , col = "blue", pch = 20, cex = .3, xlab = "", ylab = "", axes = F)
+
+plot(as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC")[ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.1$spc ) ]
+     , Coffein, main = "Coffein", xlab = "", ylab = "Coffein in %")
+abline( v = as.POSIXct(bev$raw$ref$Mannheim_MY$datetime[ - dat.row.sum[[ i ]]], tz = "UTC" ), lty = 3)
+
+par(new = T)
+
+plot( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC")[ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.1$spc ) ]
+      , as.numeric(unlist(bev$pca$fp$spc[[ 2  ]]$calres$scores[ , 1][ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.1$spc )]))
+      , col = "blue", pch = 20, cex = .3, xlab = "", ylab = "", axes = F)
+
 dev.off()  
 
 
@@ -277,6 +305,8 @@ png(paste0(date(),"_Mannheim_MY_Detail2_Status.png"),xxx<-4800 / 1,xxx/16*9,"px"
 par(mfrow = c(3,4), mar = c(3,3,2,1))
 for(iii in 1 : ncol(fp.detail.2$data$data)){
   
+  if(iii == ncol(fp.detail.2$data$data)) next
+  
   plot( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC")[ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.2$spc ) ]
         , as.numeric(unlist(fp.detail.2$data$data[ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.2$spc ) , iii, with = F]))
         , main = fp.detail.2$data$names[iii], xlab = "", ylab = fp.detail.2$data$names[iii])
@@ -288,9 +318,35 @@ for(iii in 1 : ncol(fp.detail.2$data$data)){
         , as.numeric(unlist(bev$pca$fp$spc[[ 2  ]]$calres$scores[ , 1][ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.2$spc )]))
         , col = "blue", pch = 20, cex = .3, xlab = "", ylab = "", axes = F)
 }
+
+trs <- transfer_csv(bev$raw$spc$Mannheim_MY[ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.2$spc ) , ])
+
+GS2 <- use_model_on_device("CCEP", "Coca_Cola", "3", "GS2", trs)
+Coffein <- use_model_on_device("CCEP", "Coca_Cola", "3", "Coffein", trs)
+
+plot(as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC")[ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.2$spc ) ]
+     , GS2, main = "GS2", xlab = "", ylab = "GS2 in %")
+abline( v = as.POSIXct(bev$raw$ref$Mannheim_MY$datetime[ - dat.row.sum[[ i ]]], tz = "UTC" ), lty = 3)
+
+par(new = T)
+
+plot( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC")[ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.2$spc ) ]
+      , as.numeric(unlist(bev$pca$fp$spc[[ 2  ]]$calres$scores[ , 1][ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.2$spc )]))
+      , col = "blue", pch = 20, cex = .3, xlab = "", ylab = "", axes = F)
+
+plot(as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC")[ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.2$spc ) ]
+     , Coffein, main = "Coffein", xlab = "", ylab = "Coffein in %")
+abline( v = as.POSIXct(bev$raw$ref$Mannheim_MY$datetime[ - dat.row.sum[[ i ]]], tz = "UTC" ), lty = 3)
+
+par(new = T)
+
+plot( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC")[ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.2$spc ) ]
+      , as.numeric(unlist(bev$pca$fp$spc[[ 2  ]]$calres$scores[ , 1][ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.2$spc )]))
+      , col = "blue", pch = 20, cex = .3, xlab = "", ylab = "", axes = F)
+
 dev.off()  
 
-# detail 2 ####
+# detail 3 ####
 detaillist <- list()
 detaillist$detail[[7]] <- c(28200, 29000)
 detaillist$detail[[8]] <- c(28300, 28800)
@@ -421,6 +477,8 @@ png(paste0(date(),"_Mannheim_MY_Detail3_Status.png"),xxx<-4800 / 1,xxx/16*9,"px"
 par(mfrow = c(3,4), mar = c(3,3,2,1))
 for(iii in 1 : ncol(fp.detail.3$data$data)){
   
+  if(iii == ncol(fp.detail.3$data$data)) next
+  
   plot( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC")[ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.3$spc ) ]
         , as.numeric(unlist(fp.detail.3$data$data[ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.3$spc ) , iii, with = F]))
         , main = fp.detail.3$data$names[iii], xlab = "", ylab = fp.detail.3$data$names[iii])
@@ -432,4 +490,30 @@ for(iii in 1 : ncol(fp.detail.3$data$data)){
         , as.numeric(unlist(bev$pca$fp$spc[[ 2  ]]$calres$scores[ , 1][ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.3$spc )]))
         , col = "blue", pch = 20, cex = .3, xlab = "", ylab = "", axes = F)
 }
+
+trs <- transfer_csv(bev$raw$spc$Mannheim_MY[ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.3$spc ) , ])
+
+GS2 <- use_model_on_device("CCEP", "Coca_Cola", "3", "GS2", trs)
+Coffein <- use_model_on_device("CCEP", "Coca_Cola", "3", "Coffein", trs)
+
+plot(as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC")[ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.3$spc ) ]
+     , GS2, main = "GS2", xlab = "", ylab = "GS2 in %")
+abline( v = as.POSIXct(bev$raw$ref$Mannheim_MY$datetime[ - dat.row.sum[[ i ]]], tz = "UTC" ), lty = 3)
+
+par(new = T)
+
+plot( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC")[ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.3$spc ) ]
+      , as.numeric(unlist(bev$pca$fp$spc[[ 2  ]]$calres$scores[ , 1][ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.3$spc )]))
+      , col = "blue", pch = 20, cex = .3, xlab = "", ylab = "", axes = F)
+
+plot(as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC")[ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.3$spc ) ]
+     , Coffein, main = "Coffein", xlab = "", ylab = "Coffein in %")
+abline( v = as.POSIXct(bev$raw$ref$Mannheim_MY$datetime[ - dat.row.sum[[ i ]]], tz = "UTC" ), lty = 3)
+
+par(new = T)
+
+plot( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC")[ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.3$spc ) ]
+      , as.numeric(unlist(bev$pca$fp$spc[[ 2  ]]$calres$scores[ , 1][ which( as.POSIXct(bev$raw$spc$Mannheim_MY$datetime, tz = "UTC") %in% fp.detail.3$spc )]))
+      , col = "blue", pch = 20, cex = .3, xlab = "", ylab = "", axes = F)
+
 dev.off()  

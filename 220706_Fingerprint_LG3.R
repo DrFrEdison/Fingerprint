@@ -194,7 +194,7 @@ for(i in 1:length(bev$fp$spc)){
   
   dat.row.sum[[ i ]] <- unique( sort( c(dat.row.sum[[ i ]], dat.row.inf[[ i ]]) ) )
   
-  bev$pca$fp$spc[[ i ]] <- mdatools::pca( bev$fp$spc[[ i ]][ - dat.row.sum[[ i ]], bev$para$wl %in% 220:450] , ncomp = 2)
+  bev$pca$fp$spc[[ i ]] <- mdatools::pca( bev$fp$spc[[ i ]][ - dat.row.sum[[ i ]], bev$para$wl %in% 220:450] , ncomp = 6)
   
 }
 
@@ -229,6 +229,11 @@ for(i in 1 : length(bev$raw$spc)){
 }
 
 dev.off()
+
+####
+plot( bev$pca$fp$spc[[ 1 ]]$calres$scores[ , 3], bev$pca$fp$spc[[ 1 ]]$calres$scores[ , 6]
+      , xlim = c(-.05, .05), ylim = c(-.03,.03))
+
 
 
 
